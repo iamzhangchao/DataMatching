@@ -5,5 +5,6 @@ package com.hust.zsuper.DealWithEnterprises;
  */
 public class CreateTables {
     // this is a test
+    // this another test
 
 }
