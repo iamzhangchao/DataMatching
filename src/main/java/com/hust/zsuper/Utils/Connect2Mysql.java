@@ -4,6 +4,7 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by zsuper on 2017/4/13.
@@ -37,6 +38,25 @@ public class Connect2Mysql {
         Class.forName("com.mysql.jdbc.Driver");
         return DriverManager.getConnection(address, user, password);
     }
+
+    /**
+     * 增删字段
+     */
+
+//    public static void build_some_labels(Connection connection){
+//        try{
+//            Statement statement =connection.createStatement();
+//
+//
+//            String create_ID="ALTER TABLE test add ID int()"
+//
+//        }catch(SQLException sqle){
+//            LOG.error(sqle.getMessage(),sqle.getCause());
+//        }
+//
+//    }
+
+
 
 
 
