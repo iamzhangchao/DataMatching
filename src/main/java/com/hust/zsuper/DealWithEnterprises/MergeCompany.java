@@ -25,27 +25,22 @@ public class MergeCompany {
         int row = 0;
         int nianfen=0;
         try {
-            String query1 = "SELECT * FROM test limit" + row + ",1";
-
-            // 存在问题，遍历到最后的时候可能出现这句话运行不了
-            PreparedStatement statement = connection.prepareStatement(query1);
+            String query = "SELECT * FROM test limit " + row;
+            System.out.println("Creating statement...");
+            PreparedStatement statement = connection.prepareStatement(query);
 
             ResultSet rs = statement.executeQuery();
+            while(rs.next()){
 
-            nianfen=rs.getInt(2);
-            if (!setID.containsKey(nianfen)){
-                setID.put(nianfen,nianfen*10000000);
+                nianfen=rs.getInt(2);
+                System.out.println(nianfen);
+                if (!setID.containsKey(nianfen)){
+                    setID.put(nianfen,nianfen*10000000);
+                    System.out.println("数据中新增年份："+nianfen);
 
+                }
+                statement.setInt(1,setID.get(nianfen)+1);
             }
-            statement.setInt(1,setID.get(nianfen)+1);
-
-
-
-
-
-
-
-
         } catch (SQLException sqle) {
             LOG.error(sqle.getMessage(), sqle.getCause());
         }
@@ -54,9 +49,13 @@ public class MergeCompany {
 
     public static void main(String[] args) {
         try {
+
             Class.forName("com.mysql.jdbc.Driver");
-            Connection connection = DriverManager.getConnection(Configuration.company_sql_address,
-                    "root", "");
+            System.out.println("Connecting to database...");
+            Connection connection = DriverManager.getConnection(
+                    "jdbc:mysql://localhost：3306/industry_raw",
+                    "root", "123456");
+            System.out.println("Connecting to database success ！");
 
             createID(connection);
 
