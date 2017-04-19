@@ -22,8 +22,6 @@ public class MergeCompany {
     private static void createID(Connection connection) {
 
         Map<Integer, Integer> setID = new HashMap<Integer, Integer>();
-
-
         int row = 0;
         int nianfen=0;
         try {
@@ -39,7 +37,6 @@ public class MergeCompany {
                 setID.put(nianfen,nianfen*10000000);
 
             }
-
             statement.setInt(1,setID.get(nianfen)+1);
 
 
