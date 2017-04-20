@@ -13,34 +13,64 @@ import java.util.*;
  */
 public class MergeCompany {
     private static final Log LOG = LogFactory.getLog(MergeCompany.class);
+    private static final long serialVersionUID = 919286545866124006L;
 
+    private static void Merge(Connection connection) {
 
-    /**
-     * 连接数据库
-     */
+        Map<Integer, Integer> setBrotherID = new TreeMap<Integer, Integer>();
+//        TreeMap setBrotherID=new TreeMap();
 
-    private static void createID(Connection connection) {
-
-        Map<Integer, Integer> setID = new HashMap<Integer, Integer>();
-        int row = 0;
-        int nianfen=0;
         try {
-            String query = "SELECT * FROM test limit " + row;
-            System.out.println("Creating statement...");
-            PreparedStatement statement = connection.prepareStatement(query);
 
-            ResultSet rs = statement.executeQuery();
-            while(rs.next()){
+            String query_1 = "SELECT firm_id,tag FROM test limit 0,1";
+            PreparedStatement statement_1 = connection.prepareStatement(query_1);
 
-                nianfen=rs.getInt(2);
-                System.out.println(nianfen);
-                if (!setID.containsKey(nianfen)){
-                    setID.put(nianfen,nianfen*10000000);
-                    System.out.println("数据中新增年份："+nianfen);
+            String query_2 = "SELECT ID,nianfen " +
+                    "from test WHERE firm_id = ?";
+            PreparedStatement statement_2 = connection.prepareStatement(query_2);
 
-                }
-                statement.setInt(1,setID.get(nianfen)+1);
+            // 更新数据LB,RB
+            String query_3 = "UPDATE test SET RBrother_ID = ? WHERE ID = ?";
+            String query_4 = "UPDATE test SET LBrother_ID = ? WHERE ID = ?";
+            PreparedStatement statement_3 = connection.prepareStatement(query_3);
+            PreparedStatement statement_4 = connection.prepareStatement(query_4);
+
+            ResultSet rs_1 = statement_1.executeQuery();
+            while (rs_1.next()) {
+                // Ensure the item has not been processed according to tag
+                if (!rs_1.getBoolean(2)) {
+                    int firm_id = rs_1.getInt(1);
+                    statement_2.setInt(1, firm_id);
+                    ResultSet rs_2 = statement_2.executeQuery();
+
+                    //循环读取查询的结果，保存到setID中
+                    while (rs_2.next()) {
+
+                        setBrotherID.put(rs_2.getInt(2), rs_2.getInt(1));
+                    }
+
+                    //更新数据 LB,RB
+                    Iterator it = setBrotherID.keySet().iterator();
+                    int a, b;
+                    a = setBrotherID.get(it.next());
+
+                    while (it.hasNext()) {
+                        b = setBrotherID.get(it.next());
+
+                        statement_3.setInt(1, b);
+                        statement_3.setInt(2, a);
+                        statement_3.executeUpdate();
+
+                        statement_4.setInt(1, a);
+                        statement_4.setInt(2, b);
+                        statement_4.executeUpdate();
+
+                        a = b;
+                   }
+                   rs_2.close();
+               }
             }
+            rs_1.close();
         } catch (SQLException sqle) {
             LOG.error(sqle.getMessage(), sqle.getCause());
         }
@@ -53,11 +83,11 @@ public class MergeCompany {
             Class.forName("com.mysql.jdbc.Driver");
             System.out.println("Connecting to database...");
             Connection connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost：3306/industry_raw",
+                    "jdbc:mysql://localhost:3306/industry_raw",
                     "root", "123456");
-            System.out.println("Connecting to database success ！");
-
-            createID(connection);
+            Merge(connection);
+            System.out.println("Close the connection!");
+            connection.close();
 
 
         } catch (ClassNotFoundException cnfe) {
@@ -67,10 +97,6 @@ public class MergeCompany {
         }
     }
 
-
-    /**
-     * 新建ID字段，建立ID索引、公司名索引。新建LBrother_id,RBrother_id字段，新建tag字段，默认为N。
-     */
 
     /**
      * 建立list,依次读取法人代码，进行比较之后进行，查找操作判断，

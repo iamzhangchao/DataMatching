@@ -34,11 +34,11 @@ public class SaveData2mysql {
 
                 // 判断label是否相同
                 String firstline=bufferedReader.readLine();
-                for(String label:firstline.split("\t")){
-                    if(){
-
-                    }
-                }
+//                for(String label:firstline.split("\t")){
+//                    if(){
+//
+//                    }
+//                }
 
                 String eachLine;
                 while ((eachLine = bufferedReader.readLine()) != null) {
