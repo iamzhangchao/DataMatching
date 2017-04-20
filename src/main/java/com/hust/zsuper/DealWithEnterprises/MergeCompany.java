@@ -32,8 +32,10 @@ public class MergeCompany {
             // 更新数据LB,RB
             String query_3 = "UPDATE test SET RBrother_ID = ?,tag=TRUE WHERE ID = ?";
             String query_4 = "UPDATE test SET LBrother_ID = ?,tag=TRUE WHERE ID = ?";
+            String query_5 = "UPDATE test SET tag=TRUE WHERE ID = ?";
             PreparedStatement statement_3 = connection.prepareStatement(query_3);
             PreparedStatement statement_4 = connection.prepareStatement(query_4);
+            PreparedStatement statement_5 = connection.prepareStatement(query_5);
 
             ResultSet rs_1 = statement_1.executeQuery();
             while (rs_1.next()) {
@@ -45,16 +47,20 @@ public class MergeCompany {
 
                     //循环读取查询的结果，保存到setID中
                     while (rs_2.next()) {
-
                         setBrotherID.put(rs_2.getInt(2), rs_2.getInt(1));
                     }
 
                     //更新数据 LB,RB
                     Iterator it = setBrotherID.keySet().iterator();
+                    int size = setBrotherID.size();
                     int a, b;
                     a = setBrotherID.get(it.next());
+                    if (size == 1) {
+                        statement_5.setInt(1, a);
+                        statement_5.executeUpdate();
+                    }
 
-                    while (it.hasNext()) {
+                    while (size > 1 && it.hasNext()) {
                         b = setBrotherID.get(it.next());
 
                         statement_3.setInt(1, b);
