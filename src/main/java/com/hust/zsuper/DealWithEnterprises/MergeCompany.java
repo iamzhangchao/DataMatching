@@ -30,8 +30,8 @@ public class MergeCompany {
             PreparedStatement statement_2 = connection.prepareStatement(query_2);
 
             // 更新数据LB,RB
-            String query_3 = "UPDATE test SET RBrother_ID = ? WHERE ID = ?";
-            String query_4 = "UPDATE test SET LBrother_ID = ? WHERE ID = ?";
+            String query_3 = "UPDATE test SET RBrother_ID = ?,tag=TRUE WHERE ID = ?";
+            String query_4 = "UPDATE test SET LBrother_ID = ?,tag=TRUE WHERE ID = ?";
             PreparedStatement statement_3 = connection.prepareStatement(query_3);
             PreparedStatement statement_4 = connection.prepareStatement(query_4);
 
@@ -66,9 +66,9 @@ public class MergeCompany {
                         statement_4.executeUpdate();
 
                         a = b;
-                   }
-                   rs_2.close();
-               }
+                    }
+                    rs_2.close();
+                }
             }
             rs_1.close();
         } catch (SQLException sqle) {
