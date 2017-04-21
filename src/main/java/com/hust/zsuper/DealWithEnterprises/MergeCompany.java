@@ -22,7 +22,7 @@ public class MergeCompany {
 
         try {
 
-            String query_1 = "SELECT firm_id,tag FROM test limit 0,1";
+            String query_1 = "SELECT firm_id,tag FROM test";
             PreparedStatement statement_1 = connection.prepareStatement(query_1);
 
             String query_2 = "SELECT ID,nianfen " +
@@ -75,6 +75,8 @@ public class MergeCompany {
                     }
                     rs_2.close();
                 }
+                setBrotherID.clear();
+
             }
             rs_1.close();
         } catch (SQLException sqle) {
