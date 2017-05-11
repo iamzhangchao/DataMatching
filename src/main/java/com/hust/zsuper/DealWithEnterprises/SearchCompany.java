@@ -154,9 +154,9 @@ public class SearchCompany {
              * 输入查询的公司名
              */
 
-//            String firm_name = "东莞市深联造纸有限公司";
+            String firm_name = "东莞市深联造纸有限公司";
 //            String firm_name = "长老乡万星锡矿";
-            String firm_name="原阳县电业局";
+//            String firm_name="中国海洋石油渤海公司";
 //            String firm_name="启东恒融机械制造厂";
 
             searchCompany(connection, firm_name);
