@@ -5,14 +5,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by zsuper on 2017/5/8.
@@ -51,8 +46,6 @@ public class TxtToMySQL {
         /**
          * 循环进行读取txt文件
          */
-        Map<String, String> basis_info = new HashMap<String, String>();
-        Map<String, String> add_info = new HashMap<String, String>();
         for (File file : fileList) {
             System.out.println("！！！！！！！！！！开始读第一个文件");
             String encoding = "GBK";
@@ -64,44 +57,120 @@ public class TxtToMySQL {
                 String data = "";
                 String labels = "";
                 String datas = "";
-                Statement stmt = connection.createStatement();
-                while ((lineTXT = bufferedReader.readLine()) != null) {
-//                    System.out.println("进入循环");
-//                    System.out.println(lineTXT);
-                    if (lineTXT.startsWith("*")) {
-                        System.out.println("开头为*");
-                        basis_info.clear();
-                        add_info.clear();
-                    }
-                    if (lineTXT.startsWith("<")) {
-                        data = lineTXT.split("=")[1];
-                        label = lineTXT.split("=")[0].replace("<", "").replace(">", "");
-//                        if(!basis_info.containsKey(lable)){
-//                            basis_info.put(lable,data);
-//                        }
+                String data_zhuanlihao="";
+                String shouquangonggaohao="";
+                String shendinggonggaohao="";
+                String falvzhuangtaigonggaori="";
+                String falvzhuangtai="";
+                String falvzhuangtaixinxi="";
+                String banzhengri="";
+                String[] letters={"*","【","<"};
 
-                        if(isIn(label,all_labels)){
-                            datas = datas + "\""+data +"\""+ ",";
-                            labels = labels + label + ",";
+                //建立数据库连接
+                Statement stmt = connection.createStatement();
+                String add_query="insert into patent_status (专利号,授权公告号,审定公告号,法律状态公告日,法律状态,法律状态信息,颁证日)" + "values(?,?,?,?,?,?,?)";
+                PreparedStatement preparedStatement=connection.prepareStatement(add_query);
+
+                while ((lineTXT = bufferedReader.readLine()) != null) {
+                    String first_letter=lineTXT.substring(0,1);
+
+                    if(isIn(first_letter,letters)){
+                        if (first_letter.equals("*")) {
+                            // 对字段进行初始化
+                            label="";
+                            data="";
+                            labels="";
+                            datas="";
+                            data_zhuanlihao="";
+                            shouquangonggaohao="";
+                            shendinggonggaohao="";
+                            falvzhuangtaigonggaori="";
+                            falvzhuangtai="";
+                            falvzhuangtaixinxi="";
+                            banzhengri="";
+                        }
+                        if (first_letter.equals("<")) {
+                            data = lineTXT.split("=")[1];
+                            label = lineTXT.split("=")[0].replace("<", "").replace(">", "");
+
+                            // 更新专利号的数据
+                            if(label.equals("专利号")){
+                                data_zhuanlihao=data;
+                            }
+
+                            if(isIn(label,all_labels)){
+                                datas = datas + "\""+data +"\""+ ",";
+                                labels = labels + label + ",";
+                            }
+                        }
+                        if(first_letter.equals("【")){
+                            //首先对主体数据进行写入数据库
+                            if(!datas.isEmpty()){
+                                System.out.println("写入数据库");
+                                System.out.println(labels);
+                                System.out.println(datas);
+                                // 进行将map中数据写入数据库的操作
+                                String query = "insert into patent_exp (" + labels.substring(0, labels.length() - 1) +
+                                        ") values(" + datas.substring(0, datas.length() - 1) + ")";
+                                stmt.executeUpdate(query);
+                                datas = "";
+                                labels = "";
+                            }
+                            label=lineTXT.split("】")[0].replace("【", "");
+                            switch (label){
+                                case "授权公告号":
+                                    shouquangonggaohao=lineTXT.split("】")[1];
+                                    break;
+
+                                case "审定公告号":
+                                    shendinggonggaohao=lineTXT.split("】")[1];
+                                    break;
+                                case "法律状态公告日":
+                                    falvzhuangtaigonggaori=lineTXT.split("】")[1];
+                                    break;
+                                case "法律状态":
+                                    falvzhuangtai=lineTXT.split("】")[1];
+                                    break;
+                                case "法律状态信息":
+                                    falvzhuangtaixinxi=lineTXT.split("】")[1];
+                                    break;
+                                case "颁证日":
+                                    banzhengri=lineTXT.split("】")[1];
+                                    // 进行写入，并且删除全部信息
+                                    preparedStatement.setString(1,data_zhuanlihao);
+                                    preparedStatement.setString(2,shouquangonggaohao);
+                                    preparedStatement.setString(3,shendinggonggaohao);
+                                    preparedStatement.setString(4,falvzhuangtaigonggaori);
+                                    preparedStatement.setString(5,falvzhuangtai);
+                                    preparedStatement.setString(6,falvzhuangtaixinxi);
+                                    preparedStatement.setString(7,banzhengri);
+
+                                    preparedStatement.execute();
+
+                                    shouquangonggaohao="";
+                                    shendinggonggaohao="";
+                                    falvzhuangtaigonggaori="";
+                                    falvzhuangtai="";
+                                    falvzhuangtaixinxi="";
+                                    banzhengri="";
+
+                                    break;
+
+                                default:
+                                    break;
+
+                            }
                         }
                     }
-                    if(lineTXT.startsWith("【")){
-                        if(!datas.isEmpty()){
-                            System.out.println("写入数据库");
-                            System.out.println(labels);
-                            System.out.println(datas);
-                            // 进行将map中数据写入数据库的操作
-                            String query = "insert into patent_exp (" + labels.substring(0, labels.length() - 1) +
-                                    ") values(" + datas.substring(0, datas.length() - 1) + ")";
-                            stmt.executeUpdate(query);
-                            datas = "";
-                            labels = "";
+                    else{
+                        // 填补法律状态中信息
+                        if(!falvzhuangtai.isEmpty()&&falvzhuangtaixinxi.isEmpty()){
+                            falvzhuangtai=falvzhuangtai+lineTXT;
+                        }
+                        if(!falvzhuangtaixinxi.isEmpty()&&banzhengri.isEmpty()){
+                            falvzhuangtaixinxi=falvzhuangtaixinxi+lineTXT;
                         }
                     }
-                    //存储状态信息，暂时先不考虑
-//                    if(lineTXT.startsWith("【")){
-//
-//                    }
                 }
                 bufferedReader.close();
                 read.close();
